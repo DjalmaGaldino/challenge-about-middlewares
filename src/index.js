@@ -10,19 +10,77 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  let { username } = request.headers;
+
+  let user = users.find(user => user.username === username);
+
+  if(!username){
+    return response.status(404).json({ error: 'Username is empty'})
+  }
+
+  if (!user) {
+    return response.status(404).json({ error: 'Username do not exists!' })
+  };
+
+  request.user = user;
+  return next();
+
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  let { user } = request.body;
+  
+  if (!user.pro && user.todos < 10) {
+    return next();
+  } else {
+    return response.status(404).json({ error: 'User is not Pro and is more than ten todos!' });
+  };
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  let { username } = request.headers;
+  let { id } = request.params;
+  
+  let user = users.find(user =>  user.username === username);
+  
+  if(!user.pro && user.todos >= 10){
+    return response.status(403).json({ error: 'Is not possible to create a news todos!' })
+  }; 
+  
+  let checkUuid = validate(id);
+  if(!checkUuid){
+    return response.status(404).json({ error: 'Id is invalid!' })
+  }
+
+  let todo = user.todos.find(todo => todo.id === id);
+  if(!todo) {
+    return response.status(404).json({ error: 'Todo not found!' })
+  }
+
+  request.user = user;
+  request.todo = todo;
+
+  return next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  let { id } = request.params;
+
+  let validateId = validate(id);
+  if(!validateId) {
+    return response.status(404).json({ error: 'Id is not found' })
+  }
+
+  let user = users.find(user =>  user.username === username);
+  
+  if(!user.pro && user.todos >= 10){
+    return response.status(403).json({ error: 'Is not possible to create a news todos!' })
+  }
+
+  request.user = user;
+
+  return next();
+
 }
 
 app.post('/users', (request, response) => {
